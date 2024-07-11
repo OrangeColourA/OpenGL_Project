@@ -161,6 +161,8 @@ int main(void)
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    
+
     if (!window)
     {
         glfwTerminate();
@@ -170,7 +172,7 @@ int main(void)
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-
+    glfwSwapInterval(1);
     
 
     if (glewInit() != GLEW_OK)
@@ -205,9 +207,9 @@ int main(void)
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
     unsigned int index_buffer;
-    glGenBuffers(1, &index_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW);
+    GL_Call(glGenBuffers(1, &index_buffer));
+    GL_Call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
+    GL_Call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW));
 
     ShaderSourceCode source = ShaderSourceParsing("res/shaders/Basic.shader");
 
@@ -215,17 +217,38 @@ int main(void)
     std::cout << source.fragmentShader << std::endl;*/
 
     unsigned int shader = CreateShader(source.vertexShader, source.fragmentShader);
-    glUseProgram(shader);
+    GL_Call(glUseProgram(shader));
+
+    //setting up uniform for different colors for each fragment
+
+    GL_Call(int location = glGetUniformLocation(shader, "u_Color"));
+    ASSERT(location != -1);
+    GL_Call(glUniform4f(location, 0.5f, 1.0f, 0.8f, 1.0f));
+
+
+    float red = 0.5f;
+    float incr = 0.05f;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        GL_Call(glClear(GL_COLOR_BUFFER_BIT));
 
-        
+        GL_Call(glUniform4f(location, red, .3f, 0.8f, 1.0f));
         GL_Call(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-      
+        
+
+        if (red > 1.0f)
+        {
+            incr = -0.05f;
+        }
+        else if (red < 0.0f)
+        {
+            incr = 0.05f;
+        }
+
+        red += incr;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
